@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>نظام نقاط إدارة الصف</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap">
+<style>
+:root{--bg:#FFFFFF;--card:#FFFDF6;--ink:#1B2433;--mut:#4A5568;--line:#D9DFEA;--blue:#1F4E8C;--pos:#0B6B5E;--neg:#B3261E;--posbg:#E3F4EF;--negbg:#FBE9E7;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10151F;--card:#1A2232;--ink:#EEF2F8;--mut:#A9B4C6;--line:#2C3750;--blue:#8DB7F0;--pos:#5FD3BC;--neg:#FF8A80;--posbg:#133A33;--negbg:#46201D}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:'Cairo',Tahoma,sans-serif;padding:14px 14px 40px}
+header{max-width:960px;margin:0 auto 14px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between}
+h1{margin:0;font-size:24px;color:var(--blue)}
+h1 span{font-size:28px;margin-inline-start:6px}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.tools button{font:600 14px 'Cairo',sans-serif;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 14px;cursor:pointer;min-height:40px}
+.tools button[aria-pressed="true"]{border-color:var(--blue);color:var(--blue)}
+#grid{max-width:960px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.c{position:relative;background-color:var(--card);background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:16px 16px;border:3px solid var(--line);border-radius:18px;padding:12px;text-align:center;overflow:hidden;transition:border-color .2s,transform .15s}
+.c.up{border-color:var(--pos)}.c.dn{border-color:var(--neg)}
+.c.pop{transform:scale(1.04)}
+.n{font-weight:700;font-size:17px;min-height:26px}
+.crown{position:absolute;top:6px;inset-inline-start:8px;font-size:18px}
+.s{font-weight:700;font-size:44px;line-height:1.2;margin:4px 0 8px;direction:ltr}
+.up .s{color:var(--pos)}.dn .s{color:var(--neg)}
+.b{display:flex;gap:8px}
+.b button{flex:1;min-height:52px;border:0;border-radius:14px;font:700 28px 'Cairo',sans-serif;cursor:pointer;color:#fff;line-height:1}
+.b .p{background:#0B6B5E}.b .m{background:#B3261E}
+.b button:active{transform:scale(.94)}
+.fl{position:absolute;left:50%;top:40%;font-weight:700;font-size:26px;pointer-events:none;animation:fl .8s ease-out forwards}
+@keyframes fl{from{opacity:1;transform:translate(-50%,0)}to{opacity:0;transform:translate(-50%,-50px)}}
+.hint{max-width:960px;margin:14px auto 0;color:var(--mut);font-size:13px;text-align:center}
+.tm{max-width:960px;margin:0 auto 16px;background:var(--card);border:3px solid var(--blue);border-radius:18px;padding:14px;text-align:center}
+.td{font-weight:700;font-size:76px;line-height:1.1;direction:ltr;color:var(--blue);font-variant-numeric:tabular-nums}
+.td.warn{color:var(--neg)}
+.td.done{color:var(--neg);animation:bl .6s infinite}
+@keyframes bl{50%{opacity:.3}}
+#tmsg{min-height:24px;font-weight:700;color:var(--neg)}
+.tr{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px}
+.tr button,.tr input{font:600 15px 'Cairo',sans-serif;min-height:44px;border-radius:999px;border:2px solid var(--line);background:var(--bg);color:var(--ink);padding:6px 16px;cursor:pointer}
+.tr input{width:96px;text-align:center;border-radius:12px;cursor:text}
+.tr button.go{background:#0B6B5E;border-color:#0B6B5E;color:#fff;min-width:130px;font-size:17px}
+.gh{max-width:960px;margin:18px auto 10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.gh h2{margin:0;font-size:20px;color:var(--blue)}
+.gh button{font:600 13px 'Cairo',sans-serif;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;min-height:36px;cursor:pointer}
+#gp{max-width:960px;margin:0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.g{padding:12px 8px}
+.g .n{font-size:clamp(16px,4.5vw,24px)}
+.g .s{font-size:clamp(40px,10vw,60px)}
+</style>
+</head>
+<body>
+<header>
+<h1><span>∑</span>نقاط إدارة الصف</h1>
+<div class="tools">
+<button id="snd" aria-pressed="true">🔊 الصوت: يعمل</button>
+<button id="srt" aria-pressed="false">ترتيب حسب النقاط</button>
+<button id="rst">تصفير الكل</button>
+</div>
+</header>
+<section class="tm" aria-label="المؤقت">
+<div id="td" class="td" role="timer">05:00</div>
+<div id="tmsg"></div>
+<div class="tr" id="tpre">
+<button data-m="1">1 د</button><button data-m="3">3 د</button><button data-m="5">5 د</button><button data-m="10">10 د</button><button data-m="15">15 د</button>
+<input id="tin" type="number" min="1" max="180" placeholder="دقائق" aria-label="مدة مخصصة بالدقائق"><button id="tset">ضبط</button>
+</div>
+<div class="tr"><button id="tgo" class="go">ابدأ</button><button id="trs">إعادة</button></div>
+</section>
+<div class="gh"><h2>نقاط المجموعات</h2><button id="grs">تصفير المجموعات</button></div>
+<section id="gp"></section>
+<div class="gh"><h2>نقاط الطالبات</h2></div>
+<main id="grid"></main>
+<p class="hint">+ للسلوك الصحيح (الانضباط والمشاركة) · − للسلوك الخاطئ (الإخلال بنظام الصف)</p>
+<script>
+var NAMES=["شهد خالد","طفول خالد","طفول مسعود","فاطمه محاد","فاطمه محمد","لخيار","مريم","معالى","منى سعيد فائل","منى سعيد سالم","ميثاء","نور محمد","هدى"];
+var KEY="time-points-v1",S={},sound=true,sorted=false,ctx=null;
+try{S=JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){S={}}
+NAMES.forEach(function(n){if(typeof S[n]!=="number")S[n]=0});
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function ac(){try{if(!ctx)ctx=new (window.AudioContext||window.webkitAudioContext)();if(ctx.state==="suspended")ctx.resume()}catch(e){}return ctx}
+function tone(f,t0,d,type,vol,f2){var a=ac();if(!a)return;var o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(f,a.currentTime+t0);if(f2)o.frequency.exponentialRampToValueAtTime(f2,a.currentTime+t0+d);g.gain.setValueAtTime(0.0001,a.currentTime+t0);g.gain.exponentialRampToValueAtTime(vol,a.currentTime+t0+0.02);g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+t0+d);o.connect(g);g.connect(a.destination);o.start(a.currentTime+t0);o.stop(a.currentTime+t0+d+0.05)}
+function good(){if(!sound)return;tone(523,0,.15,"triangle",.25);tone(659,.1,.15,"triangle",.25);tone(784,.2,.3,"triangle",.25)}
+function bad(){if(!sound)return;tone(220,0,.35,"sawtooth",.18,110);tone(165,.12,.35,"square",.1,90)}
+function cheer(){if(!sound)return;[523,659,784,1047,1319].forEach(function(f,i){tone(f,i*.09,.25,"triangle",.25)})}
+function render(){
+var arr=NAMES.slice();if(sorted)arr.sort(function(a,b){return S[b]-S[a]});
+var top=Math.max.apply(null,NAMES.map(function(n){return S[n]}));
+var h="";
+arr.forEach(function(n){var v=S[n],cl=v>0?"up":v<0?"dn":"";
+h+='<div class="c '+cl+'" data-n="'+n+'">'+(v>0&&v===top?'<span class="crown">👑</span>':'')+'<div class="n">'+n+'</div><div class="s">'+(v>0?"+":"")+v+'</div><div class="b"><button class="m" aria-label="خصم نقطة من '+n+'">−</button><button class="p" aria-label="إضافة نقطة إلى '+n+'">+</button></div></div>'});
+document.getElementById("grid").innerHTML=h}
+function change(n,d,card){
+S[n]+=d;save();
+if(d>0){good();if(S[n]>0&&S[n]%10===0)cheer()}else bad();
+render();
+var el=document.querySelector('.c[data-n="'+n+'"]');
+if(el){var f=document.createElement("div");f.className="fl";f.textContent=d>0?"+1 ⭐":"−1";f.style.color=d>0?"var(--pos)":"var(--neg)";el.appendChild(f);el.classList.add("pop");setTimeout(function(){el.classList.remove("pop")},150)}}
+document.getElementById("grid").addEventListener("click",function(e){
+var b=e.target.closest("button");if(!b)return;var c=b.closest(".c");change(c.getAttribute("data-n"),b.classList.contains("p")?1:-1)});
+document.getElementById("snd").onclick=function(){sound=!sound;this.setAttribute("aria-pressed",sound);this.textContent=sound?"🔊 الصوت: يعمل":"🔇 الصوت: متوقف";if(sound)good()};
+document.getElementById("srt").onclick=function(){sorted=!sorted;this.setAttribute("aria-pressed",sorted);render()};
+document.getElementById("rst").onclick=function(){if(confirm("هل تريد تصفير نقاط الجميع؟")){NAMES.forEach(function(n){S[n]=0});save();render()}};
+var T={total:300,left:300,run:false,end:0,iv:null};
+function fmt(s){var m=Math.floor(s/60),r=s%60;return(m<10?"0":"")+m+":"+(r<10?"0":"")+r}
+function tshow(){var d=document.getElementById("td");d.textContent=fmt(T.left);d.className="td"+(T.run&&T.left>0&&T.left<=10?" warn":"")+(T.left===0?" done":"");document.getElementById("tmsg").textContent=T.left===0?"انتهى الوقت!":""}
+function tset(sec){clearInterval(T.iv);T.run=false;T.total=T.left=sec;document.getElementById("tgo").textContent="ابدأ";tshow()}
+function alarm(){for(var i=0;i<4;i++){tone(988,i*.35,.2,"square",.2);tone(1319,i*.35+.15,.2,"square",.2)}}
+function ttick(){var l=Math.max(0,Math.ceil((T.end-Date.now())/1000));if(l!==T.left){T.left=l;if(l>0&&l<=10&&sound)tone(880,0,.08,"square",.12)}if(l===0){clearInterval(T.iv);T.run=false;document.getElementById("tgo").textContent="ابدأ";if(sound)alarm()}tshow()}
+document.getElementById("tgo").onclick=function(){ac();if(T.run){T.run=false;clearInterval(T.iv);this.textContent="استمرار";tshow();return}if(T.left===0)T.left=T.total;T.end=Date.now()+T.left*1000;T.run=true;this.textContent="إيقاف مؤقت";clearInterval(T.iv);T.iv=setInterval(ttick,200);tshow()};
+document.getElementById("trs").onclick=function(){tset(T.total)};
+document.getElementById("tpre").addEventListener("click",function(e){var b=e.target.closest("button[data-m]");if(b)tset(parseInt(b.getAttribute("data-m"),10)*60)});
+document.getElementById("tset").onclick=function(){var v=parseFloat(document.getElementById("tin").value);if(v>0&&v<=180)tset(Math.round(v*60))};
+var GN=["الملهمات","الإبداع","الصديقات"],GC=["#6B3FA0","#B34700","#1F4E8C"],GK="group-points-v1",G=[0,0,0];
+try{var gs=JSON.parse(localStorage.getItem(GK)||"null");if(gs&&gs.length===3)G=gs.map(function(x){return typeof x==="number"?x:0})}catch(e){}
+function gsave(){try{localStorage.setItem(GK,JSON.stringify(G))}catch(e){}}
+function grender(){var top=Math.max.apply(null,G),h="";GN.forEach(function(n,i){var v=G[i],cl=v>0?"up":v<0?"dn":"";h+='<div class="c g '+cl+'" data-i="'+i+'" style="border-color:'+GC[i]+'">'+(v>0&&v===top?'<span class="crown">👑</span>':'')+'<div class="n">'+n+'</div><div class="s">'+(v>0?"+":"")+v+'</div><div class="b"><button class="m" aria-label="خصم نقطة من '+n+'">−</button><button class="p" aria-label="إضافة نقطة إلى '+n+'">+</button></div></div>'});document.getElementById("gp").innerHTML=h}
+function gchange(i,d){G[i]+=d;gsave();if(d>0){good();if(G[i]>0&&G[i]%10===0)cheer()}else bad();grender();var el=document.querySelector('#gp .c[data-i="'+i+'"]');if(el){var f=document.createElement("div");f.className="fl";f.textContent=d>0?"+1 ⭐":"−1";f.style.color=d>0?"var(--pos)":"var(--neg)";el.appendChild(f);el.classList.add("pop");setTimeout(function(){el.classList.remove("pop")},150)}}
+document.getElementById("gp").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var c=b.closest(".c");gchange(parseInt(c.getAttribute("data-i"),10),b.classList.contains("p")?1:-1)});
+document.getElementById("grs").onclick=function(){if(confirm("هل تريد تصفير نقاط المجموعات؟")){G=[0,0,0];gsave();grender()}};
+grender();
+tshow();
+render();
+</script>
+</body>
+</html>
